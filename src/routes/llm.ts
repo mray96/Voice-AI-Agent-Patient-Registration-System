@@ -27,12 +27,17 @@ async function proxyCompletion(request: FastifyRequest, reply: any) {
   delete payload.temperature;
   delete payload.top_p;
   delete payload.top_k;
+  delete payload.max_tokens;
+  delete payload.max_completion_tokens;
 
   // These are Vapi metadata fields, not OpenAI chat-completions fields.
   delete payload.call;
   delete payload.assistant;
   delete payload.metadata;
   delete payload.timestamp;
+
+  // Vapi expects an OpenAI-compatible streamed completion.
+  payload.stream = true;
 
   const upstream = await fetch(GEMINI_CHAT_COMPLETIONS_URL, {
     method: "POST",
@@ -42,6 +47,18 @@ async function proxyCompletion(request: FastifyRequest, reply: any) {
     },
     body: JSON.stringify(payload),
   });
+
+  if (!upstream.ok) {
+    const errorBody = await upstream.text();
+    request.log.error(
+      { status: upstream.status, body: errorBody },
+      "Gemini compatibility request failed",
+    );
+    return reply
+      .code(upstream.status)
+      .type("application/json")
+      .send(errorBody || JSON.stringify({ error: "Gemini request failed" }));
+  }
 
   reply.code(upstream.status);
   const contentType = upstream.headers.get("content-type");
