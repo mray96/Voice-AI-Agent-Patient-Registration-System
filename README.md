@@ -1,7 +1,7 @@
 # Voice AI Patient Registration System
 
 A deployable take-home assessment that registers fictional patients through a
-real U.S. phone number and exposes the persisted records through a REST API.
+Vapi browser voice call and exposes the persisted records through a REST API.
 
 > This is a demonstration system, not a HIPAA-compliant production application.
 > Never enter real patient or medical information.
@@ -12,15 +12,16 @@ Fill these in before submission:
 
 - Phone number: `+1 XXX XXX XXXX`
 - API base URL: `https://YOUR-PROJECT.vercel.app`
+- Public voice demo: `https://YOUR-PROJECT.vercel.app/demo`
 - Swagger UI: `https://YOUR-PROJECT.vercel.app/docs`
 
 ## Architecture
 
 ```text
-U.S. caller
+Browser tester
     |
     v
-Vapi (phone + Deepgram STT + Vapi voice + Gemini Flash)
+Vapi (browser voice + Deepgram STT + Vapi voice + Groq Llama)
     |
     | authenticated tool calls
     v
@@ -36,10 +37,10 @@ types/check constraints.
 
 ## Why this stack
 
-- **Vapi** provides the fastest route to a live U.S. number and manages the
-  speech pipeline.
-- **Gemini Flash** is fast enough for natural phone turns and has a development
-  free tier.
+- **Vapi** provides the browser voice interface and manages the speech
+  pipeline. A PSTN number can be added when phone provisioning is available.
+- **Groq + Llama 3.3 70B** provides OpenAI-compatible tool calling with a
+  generous free development rate limit.
 - **Fastify + TypeScript** gives a small, typed backend with structured logging.
 - **Supabase PostgreSQL** provides persistent relational storage on its free
   assessment tier.
@@ -70,6 +71,7 @@ types/check constraints.
 | `PUT` | `/patients/:id` | Apply a partial update |
 | `DELETE` | `/patients/:id` | Soft-delete with `deleted_at` |
 | `POST` | `/vapi/webhook` | Authenticated Vapi events and tools |
+| `GET` | `/demo` | Public Vapi browser voice demo |
 | `GET` | `/docs` | Swagger UI |
 | `GET` | `/openapi.json` | OpenAPI document |
 
@@ -115,6 +117,8 @@ Copy `.env.example` to `.env` and set:
 ```dotenv
 DATABASE_URL=postgresql://...pooler.supabase.com:6543/postgres?sslmode=require
 VAPI_WEBHOOK_SECRET=a-long-random-secret
+VAPI_PUBLIC_KEY=your-vapi-public-key
+VAPI_ASSISTANT_ID=6d1dd7d7-6b4e-4314-94eb-e1099762dd2d
 ```
 
 The runtime reads `process.env` directly. On PowerShell, set these variables in
@@ -176,7 +180,10 @@ HTTPS tunnel. Deploy to Vercel first for the simplest setup.
 
 1. Push the repository to GitHub, GitLab, or Bitbucket.
 2. Import it into a free personal Vercel project.
-3. Add `DATABASE_URL` and `VAPI_WEBHOOK_SECRET` in project environment settings.
+3. Add `DATABASE_URL`, `VAPI_WEBHOOK_SECRET`, `VAPI_PUBLIC_KEY`, and
+   `VAPI_ASSISTANT_ID` in project environment settings. The Vapi public key is
+   safe to expose in the browser; never expose a Vapi private key, Groq key, or
+   database credentials.
 4. Deploy. Vercel detects `src/server.ts` as the Fastify entry point; it
    exposes a serverless handler while `src/app.ts` remains the local process
    entry point.
@@ -185,15 +192,13 @@ HTTPS tunnel. Deploy to Vercel first for the simplest setup.
 Keep the Vercel function in `iad1` (configured in `vercel.json`) and choose a
 nearby Supabase region to reduce tool latency.
 
-## Configure Gemini and Vapi
+## Configure Groq and Vapi
 
-1. Create a Gemini API key in Google AI Studio.
-2. Configure the assistant's Custom LLM model with the Gemini OpenAI-compatible
-   endpoint
-   `https://voice-ai-agent-patient-registration.vercel.app/vapi/llm/chat/completions`
-   model `gemini-3.6-flash`. Add the Gemini key as the Custom LLM credential.
-   The endpoint strips Vapi-only metadata and deprecated Gemini sampling
-   parameters before forwarding to Google's OpenAI-compatible API.
+1. Create a Groq API key at [console.groq.com](https://console.groq.com).
+2. Configure the assistant's Custom LLM model with the deployed proxy URL
+   `https://YOUR-PROJECT.vercel.app/vapi/llm` and model
+   `llama-3.3-70b-versatile`. Add the Groq key as the Custom LLM credential.
+   The proxy forwards OpenAI-compatible streaming requests to Groq.
 3. Create a long random value for `VAPI_WEBHOOK_SECRET`.
 4. In Vapi, create a custom server credential that sends:
    `x-vapi-secret: <the same secret>`.
@@ -204,8 +209,10 @@ nearby Supabase region to reduce tool latency.
 6. Create the assistant through the Vapi API or reproduce the template in the
    dashboard. The readable prompt is in
    [`vapi/system-prompt.md`](vapi/system-prompt.md).
-7. Create a free U.S. Vapi phone number and attach the assistant.
-8. Use Vapi's browser tester first, then call the U.S. number.
+7. Attach the assistant to the public `/demo` page using the Vapi public key.
+8. Open `/demo`, allow microphone access, and use the Vapi button to test the
+   registration flow. A PSTN number can be attached separately if your Vapi
+   organization has phone provisioning enabled.
 
 If the dashboard offers a newer supported Gemini Flash or Vapi voice, it can be
 selected without changing the backend/tool contract.

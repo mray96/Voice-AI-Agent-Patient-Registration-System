@@ -9,6 +9,10 @@ const repository = new DrizzlePatientRepository(db);
 const app = await buildApp({
   repository,
   vapiWebhookSecret: config.VAPI_WEBHOOK_SECRET,
+  vapiAssistantId: config.VAPI_ASSISTANT_ID,
+  ...(config.VAPI_PUBLIC_KEY === undefined
+    ? {}
+    : { vapiPublicKey: config.VAPI_PUBLIC_KEY }),
 });
 
 try {

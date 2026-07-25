@@ -13,6 +13,7 @@ import type { PatientRepository } from "./repositories/patient-repository.js";
 import { registerPatientRoutes } from "./routes/patients.js";
 import { registerVapiRoutes } from "./routes/vapi.js";
 import { registerLlmRoutes } from "./routes/llm.js";
+import { registerDemoRoutes } from "./routes/demo.js";
 import { PatientService } from "./services/patient-service.js";
 import { loadConfig } from "./config.js";
 import { createDatabase } from "./db/client.js";
@@ -21,6 +22,8 @@ import { DrizzlePatientRepository } from "./repositories/drizzle-patient-reposit
 export interface BuildAppOptions {
   repository: PatientRepository;
   vapiWebhookSecret: string;
+  vapiPublicKey?: string;
+  vapiAssistantId?: string;
   logger?: Exclude<FastifyServerOptions["logger"], undefined>;
 }
 
@@ -81,6 +84,14 @@ export async function buildApp(
   await registerPatientRoutes(app, service);
   await registerVapiRoutes(app, service, options.vapiWebhookSecret);
   await registerLlmRoutes(app);
+  await registerDemoRoutes(app, {
+    ...(options.vapiPublicKey === undefined
+      ? {}
+      : { vapiPublicKey: options.vapiPublicKey }),
+    ...(options.vapiAssistantId === undefined
+      ? {}
+      : { vapiAssistantId: options.vapiAssistantId }),
+  });
 
   app.get("/openapi.json", { schema: { hide: true } }, async () =>
     app.swagger(),
@@ -188,6 +199,10 @@ async function getVercelApp(): Promise<FastifyInstance> {
       return buildApp({
         repository,
         vapiWebhookSecret: config.VAPI_WEBHOOK_SECRET,
+        vapiAssistantId: config.VAPI_ASSISTANT_ID,
+        ...(config.VAPI_PUBLIC_KEY === undefined
+          ? {}
+          : { vapiPublicKey: config.VAPI_PUBLIC_KEY }),
       });
     })();
   }
