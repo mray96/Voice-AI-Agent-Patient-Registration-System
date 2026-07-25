@@ -188,7 +188,9 @@ nearby Supabase region to reduce tool latency.
 ## Configure Gemini and Vapi
 
 1. Create a Gemini API key in Google AI Studio.
-2. In Vapi Dashboard -> Integrations, add the Google/Gemini provider key.
+2. Configure the assistant's Custom LLM model with the Gemini OpenAI-compatible
+   endpoint `https://generativelanguage.googleapis.com/v1beta/openai/` and
+   model `gemini-3.6-flash`. Add the Gemini key as the Custom LLM credential.
 3. Create a long random value for `VAPI_WEBHOOK_SECRET`.
 4. In Vapi, create a custom server credential that sends:
    `x-vapi-secret: <the same secret>`.

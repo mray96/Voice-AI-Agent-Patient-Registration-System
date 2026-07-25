@@ -22,8 +22,9 @@
     "version": 2
   },
   "model": {
-    "provider": "google",
-    "model": "gemini-3.5-flash",
+    "provider": "custom-llm",
+    "url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+    "model": "gemini-3.6-flash",
     "maxTokens": 500,
     "messages": [
       {
@@ -109,7 +110,10 @@
           "parameters": {
             "type": "object",
             "properties": {
-              "patient_id": { "type": "string", "format": "uuid" },
+              "patient_id": {
+                "type": "string",
+                "description": "The existing patient's UUID"
+              },
               "first_name": { "type": "string" },
               "last_name": { "type": "string" },
               "date_of_birth": { "type": "string" },
