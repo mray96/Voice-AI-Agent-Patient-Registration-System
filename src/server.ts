@@ -12,6 +12,7 @@ import { AppError } from "./lib/errors.js";
 import type { PatientRepository } from "./repositories/patient-repository.js";
 import { registerPatientRoutes } from "./routes/patients.js";
 import { registerVapiRoutes } from "./routes/vapi.js";
+import { registerLlmRoutes } from "./routes/llm.js";
 import { PatientService } from "./services/patient-service.js";
 import { loadConfig } from "./config.js";
 import { createDatabase } from "./db/client.js";
@@ -79,6 +80,7 @@ export async function buildApp(
 
   await registerPatientRoutes(app, service);
   await registerVapiRoutes(app, service, options.vapiWebhookSecret);
+  await registerLlmRoutes(app);
 
   app.get("/openapi.json", { schema: { hide: true } }, async () =>
     app.swagger(),

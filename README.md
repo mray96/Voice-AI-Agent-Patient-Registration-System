@@ -189,8 +189,11 @@ nearby Supabase region to reduce tool latency.
 
 1. Create a Gemini API key in Google AI Studio.
 2. Configure the assistant's Custom LLM model with the Gemini OpenAI-compatible
-   endpoint `https://generativelanguage.googleapis.com/v1beta/openai/` and
+   endpoint
+   `https://voice-ai-agent-patient-registration.vercel.app/vapi/llm/chat/completions`
    model `gemini-3.6-flash`. Add the Gemini key as the Custom LLM credential.
+   The endpoint strips Vapi-only metadata and deprecated Gemini sampling
+   parameters before forwarding to Google's OpenAI-compatible API.
 3. Create a long random value for `VAPI_WEBHOOK_SECRET`.
 4. In Vapi, create a custom server credential that sends:
    `x-vapi-secret: <the same secret>`.

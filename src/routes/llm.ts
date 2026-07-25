@@ -1,0 +1,64 @@
+import { Readable } from "node:stream";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+
+const GEMINI_CHAT_COMPLETIONS_URL =
+  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+type OpenAiRequest = Record<string, unknown>;
+
+function bearerToken(request: FastifyRequest): string {
+  const authorization = request.headers.authorization;
+  return authorization?.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length)
+    : "";
+}
+
+async function proxyCompletion(request: FastifyRequest, reply: any) {
+  const token = bearerToken(request);
+  if (!token) {
+    return reply.code(401).send({ error: "A bearer token is required" });
+  }
+
+  const input = (request.body ?? {}) as OpenAiRequest;
+  const payload = { ...input };
+
+  // Gemini 3.x rejects deprecated sampling parameters. Vapi may add these
+  // fields from its assistant UI, so remove them at the compatibility boundary.
+  delete payload.temperature;
+  delete payload.top_p;
+  delete payload.top_k;
+
+  // These are Vapi metadata fields, not OpenAI chat-completions fields.
+  delete payload.call;
+  delete payload.assistant;
+  delete payload.metadata;
+  delete payload.timestamp;
+
+  const upstream = await fetch(GEMINI_CHAT_COMPLETIONS_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  reply.code(upstream.status);
+  const contentType = upstream.headers.get("content-type");
+  if (contentType) reply.header("content-type", contentType);
+  const cacheControl = upstream.headers.get("cache-control");
+  if (cacheControl) reply.header("cache-control", cacheControl);
+
+  if (!upstream.body) {
+    return reply.send(await upstream.text());
+  }
+
+  return reply.send(Readable.fromWeb(upstream.body as ReadableStream));
+}
+
+export async function registerLlmRoutes(app: FastifyInstance) {
+  await app.register(async (router) => {
+    router.post("/vapi/llm", proxyCompletion);
+    router.post("/vapi/llm/chat/completions", proxyCompletion);
+  });
+}

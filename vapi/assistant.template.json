@@ -23,8 +23,9 @@
   },
   "model": {
     "provider": "custom-llm",
-    "url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+    "url": "https://voice-ai-agent-patient-registration.vercel.app/vapi/llm/chat/completions",
     "model": "gemini-3.6-flash",
+    "metadataSendMode": "off",
     "maxTokens": 500,
     "messages": [
       {
