@@ -6,14 +6,37 @@ Vapi browser voice call and exposes the persisted records through a REST API.
 > This is a demonstration system, not a HIPAA-compliant production application.
 > Never enter real patient or medical information.
 
-## Live demo
+## Tester quick start
 
-Fill these in before submission:
+Use these public links—no local setup or credentials are required:
 
-- Phone number: `+1 XXX XXX XXXX`
-- API base URL: `https://YOUR-PROJECT.vercel.app`
-- Public voice demo: `https://YOUR-PROJECT.vercel.app/demo`
-- Swagger UI: `https://YOUR-PROJECT.vercel.app/docs`
+- **Voice registration demo:** https://voice-ai-agent-patient-registration.vercel.app/demo
+- **Swagger API documentation:** https://voice-ai-agent-patient-registration.vercel.app/docs
+- **GitHub repository:** https://github.com/mray96/Voice-AI-Agent-Patient-Registration-System
+
+### Test the voice flow
+
+1. Open the [voice registration demo](https://voice-ai-agent-patient-registration.vercel.app/demo) in Chrome or Edge.
+2. Allow microphone access and click the Vapi call button.
+3. Use fictional details. For example: **Alex Morgan**, **April 18, 1992**, **Female**, **415-555-0198**, **500 Market Street, San Francisco, CA 94105**.
+4. Provide optional email, insurance, emergency-contact, or language details when asked—or say “no.”
+5. Check the read-back carefully and say “yes” only when it is correct. The patient is saved after confirmation.
+6. To test corrections, provide an incorrect value first, then correct it. Say “start over” to restart the registration.
+
+This submission uses browser voice testing because phone-number provisioning is not
+enabled in the current Vapi test organization. Use fictional data only; this is
+not a medical or HIPAA-compliant service.
+
+### Test the REST API
+
+Open [Swagger UI](https://voice-ai-agent-patient-registration.vercel.app/docs),
+choose **Try it out**, and test `/health`, `POST /patients`, `GET /patients`,
+`GET /patients/{patient_id}`, `PUT /patients/{patient_id}`, and
+`DELETE /patients/{patient_id}`. Responses use the `{ data, error }` envelope.
+After using the voice demo, refresh `GET /patients` to confirm the record was
+persisted in PostgreSQL.
+
+The API base URL is `https://voice-ai-agent-patient-registration.vercel.app`.
 
 ## Architecture
 
@@ -214,8 +237,8 @@ nearby Supabase region to reduce tool latency.
    registration flow. A PSTN number can be attached separately if your Vapi
    organization has phone provisioning enabled.
 
-If the dashboard offers a newer supported Gemini Flash or Vapi voice, it can be
-selected without changing the backend/tool contract.
+The assistant currently uses Groq's OpenAI-compatible `llama-3.3-70b-versatile`
+model through the deployed `/vapi/llm` proxy.
 
 ### Vapi API import
 
@@ -233,7 +256,7 @@ is easier to configure than `x-vapi-secret`.
 
 ## Voice acceptance checklist
 
-Before submission, call the number and cover:
+Before submission, use the browser demo and cover:
 
 - Standard required-field registration and optional-field opt-out
 - A correction such as a misspelled last name
