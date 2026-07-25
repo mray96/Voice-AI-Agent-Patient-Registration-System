@@ -1,8 +1,8 @@
 import { Readable } from "node:stream";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
-const GEMINI_CHAT_COMPLETIONS_URL =
-  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const GROQ_CHAT_COMPLETIONS_URL =
+  "https://api.groq.com/openai/v1/chat/completions";
 
 type OpenAiRequest = Record<string, unknown>;
 
@@ -39,7 +39,7 @@ async function proxyCompletion(request: FastifyRequest, reply: any) {
   // Vapi expects an OpenAI-compatible streamed completion.
   payload.stream = true;
 
-  const upstream = await fetch(GEMINI_CHAT_COMPLETIONS_URL, {
+  const upstream = await fetch(GROQ_CHAT_COMPLETIONS_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
