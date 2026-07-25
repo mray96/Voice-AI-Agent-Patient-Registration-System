@@ -117,6 +117,14 @@ DATABASE_URL=postgresql://...pooler.supabase.com:6543/postgres?sslmode=require
 VAPI_WEBHOOK_SECRET=a-long-random-secret
 ```
 
+The runtime reads `process.env` directly. On PowerShell, set these variables in
+the same terminal before running `npm run dev` (or use `vercel env pull`):
+
+```powershell
+$env:DATABASE_URL = "postgresql://...pooler.supabase.com:6543/postgres?sslmode=require"
+$env:VAPI_WEBHOOK_SECRET = "a-long-random-secret"
+```
+
 Use the Supabase **transaction pooler** connection string for Vercel. URL-encode
 special characters in the database password.
 
@@ -169,7 +177,9 @@ HTTPS tunnel. Deploy to Vercel first for the simplest setup.
 1. Push the repository to GitHub, GitLab, or Bitbucket.
 2. Import it into a free personal Vercel project.
 3. Add `DATABASE_URL` and `VAPI_WEBHOOK_SECRET` in project environment settings.
-4. Deploy. Vercel detects `src/app.ts` as a Fastify entry point.
+4. Deploy. Vercel detects `src/server.ts` as the Fastify entry point; it
+   exposes a serverless handler while `src/app.ts` remains the local process
+   entry point.
 5. Verify `/health`, `/docs`, and a complete REST create/read cycle.
 
 Keep the Vercel function in `iad1` (configured in `vercel.json`) and choose a

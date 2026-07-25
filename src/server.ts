@@ -1,5 +1,6 @@
 import cors from "@fastify/cors";
 import swagger from "@fastify/swagger";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import Fastify, {
   type FastifyError,
   type FastifyInstance,
@@ -12,6 +13,9 @@ import type { PatientRepository } from "./repositories/patient-repository.js";
 import { registerPatientRoutes } from "./routes/patients.js";
 import { registerVapiRoutes } from "./routes/vapi.js";
 import { PatientService } from "./services/patient-service.js";
+import { loadConfig } from "./config.js";
+import { createDatabase } from "./db/client.js";
+import { DrizzlePatientRepository } from "./repositories/drizzle-patient-repository.js";
 
 export interface BuildAppOptions {
   repository: PatientRepository;
@@ -166,4 +170,33 @@ export async function buildApp(
   });
 
   return app;
+}
+
+// Vercel discovers src/server.ts as the Fastify entry point. Keep the
+// application factory above reusable for local tests while exposing a lazy,
+// cached Node-compatible handler for Vercel Functions.
+let vercelAppPromise: Promise<FastifyInstance> | undefined;
+
+async function getVercelApp(): Promise<FastifyInstance> {
+  if (!vercelAppPromise) {
+    vercelAppPromise = (async () => {
+      const config = loadConfig();
+      const { db } = createDatabase(config.DATABASE_URL);
+      const repository = new DrizzlePatientRepository(db);
+      return buildApp({
+        repository,
+        vapiWebhookSecret: config.VAPI_WEBHOOK_SECRET,
+      });
+    })();
+  }
+  return vercelAppPromise;
+}
+
+export default async function vercelHandler(
+  request: IncomingMessage,
+  response: ServerResponse,
+) {
+  const app = await getVercelApp();
+  await app.ready();
+  app.routing(request, response);
 }
