@@ -1,0 +1,149 @@
+{
+  "name": "Patient Registration",
+  "firstMessage": "Thank you for calling patient registration. I'm Avery, the virtual intake coordinator. I'll help register a fictional test patient today. May I start with your first and last name?",
+  "firstMessageMode": "assistant-speaks-first",
+  "firstMessageInterruptionsEnabled": true,
+  "endCallMessage": "Thank you for calling. Goodbye.",
+  "maxDurationSeconds": 900,
+  "silenceTimeoutSeconds": 30,
+  "serverMessages": [
+    "tool-calls",
+    "end-of-call-report",
+    "status-update"
+  ],
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-3",
+    "language": "en"
+  },
+  "voice": {
+    "provider": "vapi",
+    "voiceId": "Elliot",
+    "version": 2
+  },
+  "model": {
+    "provider": "google",
+    "model": "gemini-2.5-flash",
+    "temperature": 0.2,
+    "maxTokens": 500,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are Avery, a warm and efficient patient intake coordinator registering fictional test patients. Speak naturally and keep most turns to one or two sentences. Collect required fields: first_name, last_name, date_of_birth, sex (Male, Female, Other, or Decline to Answer), U.S. 10-digit phone_number, address_line_1, city, two-letter state, and zip_code. Email is optional. After required fields, offer insurance information, emergency contact, and preferred language; collect only what the caller wants. Accept details out of order, retain volunteered fields, handle interruptions and corrections, and discard all collected data if the caller says start over. Never invent values. Validate names, non-future real dates, phone numbers, valid U.S. states, ZIP codes, and email; explain the specific problem and reprompt only that field. As soon as a valid phone number is available, call lookup_patient. If found, mention the matching name and offer to update. Before create or update, read back every field and ask 'Is all of that correct?' Do not save without an explicit yes. Call create_patient once for a new confirmed record or update_patient once for a confirmed existing record. Never claim success before the tool returns success true. On success, tell the caller they are all set and end gracefully. On failure, apologize and offer one retry; never claim the data was saved. Send dates as MM/DD/YYYY or YYYY-MM-DD, states as two-letter abbreviations, phones as 10 digits, and omit unprovided optional fields. Do not request medical history, Social Security numbers, or payment information."
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "lookup_patient",
+          "description": "Look up an active patient after the caller provides a valid phone number. Use before saving to detect a returning patient.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "phone_number": {
+                "type": "string",
+                "description": "The caller-provided U.S. phone number"
+              }
+            },
+            "required": [
+              "phone_number"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{API_BASE_URL}}/vapi/webhook",
+          "credentialId": "{{VAPI_SERVER_CREDENTIAL_ID}}"
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "create_patient",
+          "description": "Create a new patient only after the caller explicitly confirms the complete read-back.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "first_name": { "type": "string" },
+              "last_name": { "type": "string" },
+              "date_of_birth": { "type": "string" },
+              "sex": {
+                "type": "string",
+                "enum": ["Male", "Female", "Other", "Decline to Answer"]
+              },
+              "phone_number": { "type": "string" },
+              "email": { "type": "string" },
+              "address_line_1": { "type": "string" },
+              "address_line_2": { "type": "string" },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "zip_code": { "type": "string" },
+              "insurance_provider": { "type": "string" },
+              "insurance_member_id": { "type": "string" },
+              "preferred_language": { "type": "string" },
+              "emergency_contact_name": { "type": "string" },
+              "emergency_contact_phone": { "type": "string" }
+            },
+            "required": [
+              "first_name",
+              "last_name",
+              "date_of_birth",
+              "sex",
+              "phone_number",
+              "address_line_1",
+              "city",
+              "state",
+              "zip_code"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{API_BASE_URL}}/vapi/webhook",
+          "credentialId": "{{VAPI_SERVER_CREDENTIAL_ID}}"
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "update_patient",
+          "description": "Update a matching active patient only after the caller explicitly confirms the resulting complete record.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "patient_id": { "type": "string", "format": "uuid" },
+              "first_name": { "type": "string" },
+              "last_name": { "type": "string" },
+              "date_of_birth": { "type": "string" },
+              "sex": {
+                "type": "string",
+                "enum": ["Male", "Female", "Other", "Decline to Answer"]
+              },
+              "phone_number": { "type": "string" },
+              "email": { "type": "string" },
+              "address_line_1": { "type": "string" },
+              "address_line_2": { "type": "string" },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "zip_code": { "type": "string" },
+              "insurance_provider": { "type": "string" },
+              "insurance_member_id": { "type": "string" },
+              "preferred_language": { "type": "string" },
+              "emergency_contact_name": { "type": "string" },
+              "emergency_contact_phone": { "type": "string" }
+            },
+            "required": [
+              "patient_id"
+            ]
+          }
+        },
+        "server": {
+          "url": "{{API_BASE_URL}}/vapi/webhook",
+          "credentialId": "{{VAPI_SERVER_CREDENTIAL_ID}}"
+        }
+      },
+      {
+        "type": "endCall"
+      }
+    ]
+  }
+}

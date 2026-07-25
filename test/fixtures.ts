@@ -1,0 +1,18 @@
+export const validPatientInput = {
+  first_name: "Jane",
+  last_name: "O'Neil",
+  date_of_birth: "06/15/1990",
+  sex: "Female",
+  phone_number: "(415) 555-0123",
+  email: "jane@example.com",
+  address_line_1: "123 Market Street",
+  address_line_2: "Apt 4",
+  city: "San Francisco",
+  state: "ca",
+  zip_code: "94105",
+  insurance_provider: "Example Health",
+  insurance_member_id: "MEM-12345",
+  preferred_language: "English",
+  emergency_contact_name: "John O'Neil",
+  emergency_contact_phone: "415-555-0199",
+};
