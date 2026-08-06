@@ -22,8 +22,8 @@ async function proxyCompletion(request: FastifyRequest, reply: any) {
   const input = (request.body ?? {}) as OpenAiRequest;
   const payload = { ...input };
 
-  // Gemini 3.x rejects deprecated sampling parameters. Vapi may add these
-  // fields from its assistant UI, so remove them at the compatibility boundary.
+  // Vapi may add sampling fields that are not needed by the configured Groq
+  // model, so remove them at the OpenAI-compatible proxy boundary.
   delete payload.temperature;
   delete payload.top_p;
   delete payload.top_k;
@@ -52,12 +52,12 @@ async function proxyCompletion(request: FastifyRequest, reply: any) {
     const errorBody = await upstream.text();
     request.log.error(
       { status: upstream.status, body: errorBody },
-      "Gemini compatibility request failed",
+      "Groq compatibility request failed",
     );
     return reply
       .code(upstream.status)
       .type("application/json")
-      .send(errorBody || JSON.stringify({ error: "Gemini request failed" }));
+      .send(errorBody || JSON.stringify({ error: "Groq request failed" }));
   }
 
   reply.code(upstream.status);

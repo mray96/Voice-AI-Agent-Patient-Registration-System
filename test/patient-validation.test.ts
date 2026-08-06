@@ -26,9 +26,37 @@ describe("patient validation", () => {
     expect(normalizeDate("01/01/2999")).toBeNull();
   });
 
-  it("accepts a U.S. country code but rejects other lengths", () => {
+  it("accepts common U.S. formats and a country code", () => {
     expect(normalizePhone("+1 415 555 0123")).toBe("4155550123");
+    expect(normalizePhone("1-651-386-9251")).toBe("6513869251");
+    expect(normalizePhone("(651) 386-9251")).toBe("6513869251");
+    expect(normalizePhone("6513869251")).toBe("6513869251");
+  });
+
+  it("rejects invalid NANP prefixes, malformed input, and other lengths", () => {
     expect(normalizePhone("555")).toBeNull();
+    expect(normalizePhone("0000000000")).toBeNull();
+    expect(normalizePhone("1234567890")).toBeNull();
+    expect(normalizePhone("651-123-9251")).toBeNull();
+    expect(normalizePhone("call 651-386-9251")).toBeNull();
+    expect(normalizePhone("651)-386-9251")).toBeNull();
+    expect(normalizePhone("+44 651 386 9251")).toBeNull();
+  });
+
+  it("applies U.S. phone validation to an optional emergency contact", () => {
+    const result = createPatientSchema.safeParse({
+      ...validPatientInput,
+      emergency_contact_phone: "000-000-0000",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: ["emergency_contact_phone"] }),
+        ]),
+      );
+    }
   });
 
   it("rejects invalid names, states, ZIP codes, and emails", () => {

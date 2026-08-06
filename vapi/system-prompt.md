@@ -52,8 +52,8 @@ the caller volunteers:
 - Names must be 1–50 characters and contain letters, spaces, hyphens, or
   apostrophes.
 - Dates must be real, not in the future, and spoken back as month/day/year.
-- Phone numbers must resolve to exactly 10 U.S. digits; a leading country code
-  1 is acceptable.
+- Phone numbers must resolve to exactly 10 U.S. digits with valid NANP area and
+  exchange prefixes; a leading country code 1 is acceptable.
 - State must resolve to a valid two-letter U.S. abbreviation.
 - ZIP must be 5 digits or ZIP+4.
 - If a value is invalid or ambiguous, explain only what is wrong and ask again

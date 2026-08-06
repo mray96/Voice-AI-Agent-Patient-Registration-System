@@ -66,60 +66,10 @@ export async function buildApp(
       ],
     },
   });
-  app.get(
-    "/health",
-    {
-      schema: {
-        tags: ["System"],
-        summary: "Service health check",
-      },
-    },
-    async () =>
-      success({
-        status: "ok",
-        timestamp: new Date().toISOString(),
-      }),
-  );
 
-  await registerPatientRoutes(app, service);
-  await registerVapiRoutes(app, service, options.vapiWebhookSecret);
-  await registerLlmRoutes(app);
-  await registerDemoRoutes(app, {
-    ...(options.vapiPublicKey === undefined
-      ? {}
-      : { vapiPublicKey: options.vapiPublicKey }),
-    ...(options.vapiAssistantId === undefined
-      ? {}
-      : { vapiAssistantId: options.vapiAssistantId }),
-  });
-
-  app.get("/openapi.json", { schema: { hide: true } }, async () =>
-    app.swagger(),
-  );
-  app.get("/docs", { schema: { hide: true } }, async (_request, reply) => {
-    return reply.type("text/html; charset=utf-8").send(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Voice AI Patient Registration API</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
-  </head>
-  <body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-    <script>
-      SwaggerUIBundle({
-        url: "/openapi.json",
-        dom_id: "#swagger-ui",
-        deepLinking: true,
-        displayRequestDuration: true
-      });
-    </script>
-  </body>
-</html>`);
-  });
-
+  // Fastify captures the active error handlers when routes are registered.
+  // Install these before any application routes so every route uses the
+  // assessment's documented response envelope.
   app.setNotFoundHandler((_request, reply) =>
     reply.code(404).send(
       failure({
@@ -180,6 +130,60 @@ export async function buildApp(
         message: "An unexpected error occurred",
       }),
     );
+  });
+
+  app.get(
+    "/health",
+    {
+      schema: {
+        tags: ["System"],
+        summary: "Service health check",
+      },
+    },
+    async () =>
+      success({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      }),
+  );
+
+  await registerPatientRoutes(app, service);
+  await registerVapiRoutes(app, service, options.vapiWebhookSecret);
+  await registerLlmRoutes(app);
+  await registerDemoRoutes(app, {
+    ...(options.vapiPublicKey === undefined
+      ? {}
+      : { vapiPublicKey: options.vapiPublicKey }),
+    ...(options.vapiAssistantId === undefined
+      ? {}
+      : { vapiAssistantId: options.vapiAssistantId }),
+  });
+
+  app.get("/openapi.json", { schema: { hide: true } }, async () =>
+    app.swagger(),
+  );
+  app.get("/docs", { schema: { hide: true } }, async (_request, reply) => {
+    return reply.type("text/html; charset=utf-8").send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voice AI Patient Registration API</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+      SwaggerUIBundle({
+        url: "/openapi.json",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        displayRequestDuration: true
+      });
+    </script>
+  </body>
+</html>`);
   });
 
   return app;

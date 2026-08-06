@@ -95,11 +95,46 @@ describe("patient REST API", () => {
       payload: '{"broken":',
     });
     expect(malformed.statusCode).toBe(400);
-    expect(malformed.json().error.code).toBe("BAD_REQUEST");
+    expect(malformed.json()).toEqual({
+      data: null,
+      error: {
+        code: "BAD_REQUEST",
+        message: "Request body or parameters are malformed",
+      },
+    });
 
     const missing = await app.inject({ method: "GET", url: "/missing" });
     expect(missing.statusCode).toBe(404);
-    expect(missing.json().error.code).toBe("ROUTE_NOT_FOUND");
+    expect(missing.json()).toEqual({
+      data: null,
+      error: {
+        code: "ROUTE_NOT_FOUND",
+        message: "Route was not found",
+      },
+    });
+  });
+
+  it("returns a sanitized 500 envelope for unexpected failures", async () => {
+    await app.close();
+    const repository = new InMemoryPatientRepository();
+    repository.findMany = async () => {
+      throw new Error("sensitive database failure");
+    };
+    app = await buildApp({
+      repository,
+      vapiWebhookSecret: "test-vapi-secret-value",
+      logger: false,
+    });
+
+    const response = await app.inject({ method: "GET", url: "/patients" });
+    expect(response.statusCode).toBe(500);
+    expect(response.json()).toEqual({
+      data: null,
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "An unexpected error occurred",
+      },
+    });
   });
 
   it("serves health, Swagger UI, and the OpenAPI document", async () => {

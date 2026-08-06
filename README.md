@@ -1,31 +1,38 @@
 # Voice AI Patient Registration System
 
-A deployable take-home assessment that registers fictional patients through a
-Vapi browser voice call and exposes the persisted records through a REST API.
+A deployable take-home assessment with a real U.S. phone number that registers
+fictional patients through a Vapi voice agent and exposes persisted records
+through a REST API.
 
 > This is a demonstration system, not a HIPAA-compliant production application.
 > Never enter real patient or medical information.
 
 ## Tester quick start
 
-Use these public links—no local setup or credentials are required:
+Use the live phone number and public links below—no local setup or credentials
+are required:
 
+- **U.S. phone number:** **+1 (651) 386-9251** (inbound calls)
 - **Voice registration demo:** https://voice-ai-agent-patient-registration.vercel.app/demo
 - **Swagger API documentation:** https://voice-ai-agent-patient-registration.vercel.app/docs
 - **GitHub repository:** https://github.com/mray96/Voice-AI-Agent-Patient-Registration-System
 
 ### Test the voice flow
 
-1. Open the [voice registration demo](https://voice-ai-agent-patient-registration.vercel.app/demo) in Chrome or Edge.
-2. Allow microphone access and click the Vapi call button.
-3. Use fictional details. For example: **Alex Morgan**, **April 18, 1992**, **Female**, **415-555-0198**, **500 Market Street, San Francisco, CA 94105**.
-4. Provide optional email, insurance, emergency-contact, or language details when asked—or say “no.”
-5. Check the read-back carefully and say “yes” only when it is correct. The patient is saved after confirmation.
-6. To test corrections, provide an incorrect value first, then correct it. Say “start over” to restart the registration.
+1. Call **+1 (651) 386-9251** from a U.S. number. The free Vapi number accepts
+   inbound calls; outbound calling is not needed for this assessment.
+2. Use fictional details. For example: **Alex Morgan**, **April 18, 1992**,
+   **Female**, **415-555-0198**, **500 Market Street, San Francisco, CA 94105**.
+3. Provide optional email, insurance, emergency-contact, or language details
+   when asked—or say “no.”
+4. Check the complete read-back and say “yes” only when it is correct. The
+   patient is saved only after confirmation.
+5. Test a correction, an invalid field, and “start over.” Call again with the
+   same patient phone number to test the returning-patient update offer.
 
-This submission uses browser voice testing because phone-number provisioning is not
-enabled in the current Vapi test organization. Use fictional data only; this is
-not a medical or HIPAA-compliant service.
+The [browser voice demo](https://voice-ai-agent-patient-registration.vercel.app/demo)
+is retained as a secondary testing option. Use fictional data only; this is not
+a medical or HIPAA-compliant service.
 
 ### Test the REST API
 
@@ -41,10 +48,10 @@ The API base URL is `https://voice-ai-agent-patient-registration.vercel.app`.
 ## Architecture
 
 ```text
-Browser tester
+Phone caller or browser tester
     |
     v
-Vapi (browser voice + Deepgram STT + Vapi voice + Groq Llama)
+Vapi (PSTN/browser voice + Deepgram STT + Vapi voice + Groq Llama)
     |
     | authenticated tool calls
     v
@@ -60,8 +67,8 @@ types/check constraints.
 
 ## Why this stack
 
-- **Vapi** provides the browser voice interface and manages the speech
-  pipeline. A PSTN number can be added when phone provisioning is available.
+- **Vapi** provides the free inbound U.S. number, optional browser interface,
+  and managed speech pipeline.
 - **Groq + Llama 3.3 70B** provides OpenAI-compatible tool calling with a
   generous free development rate limit.
 - **Fastify + TypeScript** gives a small, typed backend with structured logging.
@@ -160,7 +167,11 @@ special characters in the database password.
 The deterministic assessment setup is:
 
 1. Open Supabase Dashboard -> SQL Editor.
-2. Paste and run [`drizzle/0000_initial.sql`](drizzle/0000_initial.sql).
+2. Run [`drizzle/0000_initial.sql`](drizzle/0000_initial.sql).
+3. Run
+   [`drizzle/0001_enforce_nanp_phone_numbers.sql`](drizzle/0001_enforce_nanp_phone_numbers.sql).
+   Existing deployments must correct any older fictional phone values that do
+   not have valid NANP area and exchange prefixes before running this migration.
 
 Run the server:
 
@@ -233,9 +244,9 @@ nearby Supabase region to reduce tool latency.
    dashboard. The readable prompt is in
    [`vapi/system-prompt.md`](vapi/system-prompt.md).
 7. Attach the assistant to the public `/demo` page using the Vapi public key.
-8. Open `/demo`, allow microphone access, and use the Vapi button to test the
-   registration flow. A PSTN number can be attached separately if your Vapi
-   organization has phone provisioning enabled.
+8. Assign assistant `6d1dd7d7-6b4e-4314-94eb-e1099762dd2d` to the inbound
+   number **+1 (651) 386-9251**, then place a real inbound test call. Use `/demo`
+   as the secondary browser test path.
 
 The assistant currently uses Groq's OpenAI-compatible `llama-3.3-70b-versatile`
 model through the deployed `/vapi/llm` proxy.
@@ -256,7 +267,7 @@ is easier to configure than `x-vapi-secret`.
 
 ## Voice acceptance checklist
 
-Before submission, use the browser demo and cover:
+Before submission, call **+1 (651) 386-9251** and cover:
 
 - Standard required-field registration and optional-field opt-out
 - A correction such as a misspelled last name

@@ -113,11 +113,11 @@ export const patients = pgTable(
   (table) => [
     check(
       "patients_phone_number_check",
-      sql`${table.phoneNumber} ~ '^[0-9]{10}$'`,
+      sql`${table.phoneNumber} ~ '^[2-9][0-9]{2}[2-9][0-9]{6}$'`,
     ),
     check(
       "patients_emergency_phone_check",
-      sql`${table.emergencyContactPhone} IS NULL OR ${table.emergencyContactPhone} ~ '^[0-9]{10}$'`,
+      sql`${table.emergencyContactPhone} IS NULL OR ${table.emergencyContactPhone} ~ '^[2-9][0-9]{2}[2-9][0-9]{6}$'`,
     ),
     check(
       "patients_zip_code_check",
