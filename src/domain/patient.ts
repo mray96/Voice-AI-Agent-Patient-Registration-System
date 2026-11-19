@@ -81,11 +81,21 @@ const optionalString = (maximum: number) =>
   z.preprocess(emptyToUndefined, z.string().trim().min(1).max(maximum).optional());
 
 export function normalizePhone(value: string): string | null {
-  let digits = value.replace(/\D/g, "");
+  const trimmed = value.trim();
+
+  // Accept common US formats, but reject malformed punctuation, letters, and
+  // other arbitrary content instead of silently stripping it from the input.
+  const presentation =
+    /^(?:\+?1[ .-]?)?(?:\(\d{3}\)|\d{3})[ .-]?\d{3}[ .-]?\d{4}$/;
+  if (!presentation.test(trimmed)) return null;
+
+  let digits = trimmed.replace(/\D/g, "");
   if (digits.length === 11 && digits.startsWith("1")) {
     digits = digits.slice(1);
   }
-  return /^\d{10}$/.test(digits) ? digits : null;
+
+  // NANP area (NPA) and exchange (NXX) codes both start with 2-9.
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits) ? digits : null;
 }
 
 export function normalizeDate(value: string): string | null {

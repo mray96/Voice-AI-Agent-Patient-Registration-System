@@ -1,5 +1,5 @@
 {
-  "name": "Patient Registration",
+  "name": "Patient Registration - Avery",
   "firstMessage": "Thank you for calling patient registration. I'm Avery, the virtual intake coordinator. I'll help register a fictional test patient today. May I start with your first and last name?",
   "firstMessageMode": "assistant-speaks-first",
   "firstMessageInterruptionsEnabled": true,
