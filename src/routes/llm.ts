@@ -3,6 +3,10 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 
 const GROQ_CHAT_COMPLETIONS_URL =
   "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODELS_WITHOUT_PARALLEL_TOOL_CALLS = new Set([
+  "openai/gpt-oss-20b",
+  "openai/gpt-oss-120b",
+]);
 const CLOUDFLARE_CHAT_COMPLETIONS_URL =
   "https://api.cloudflare.com/client/v4/accounts";
 const MAX_RATE_LIMIT_RETRY_MS = 2_000;
@@ -71,6 +75,16 @@ async function proxyCompletion(
     delete payload.temperature;
     delete payload.top_p;
     delete payload.top_k;
+
+    // Groq defaults parallel_tool_calls to true, but GPT-OSS models do not
+    // support parallel tool calls. Disable it for these models explicitly.
+    if (
+      GROQ_MODELS_WITHOUT_PARALLEL_TOOL_CALLS.has(requestedModel) &&
+      Array.isArray(payload.tools) &&
+      payload.tools.length > 0
+    ) {
+      payload.parallel_tool_calls = false;
+    }
   }
 
   // Vapi sends max_tokens. Preserve its output cap under the current
