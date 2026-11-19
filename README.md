@@ -263,8 +263,11 @@ To use the Cloudflare model through the same Vercel proxy:
    The proxy forwards that bearer token to Cloudflare.
 3. In the assistant's Model Settings, choose Custom LLM and set the URL to
    `https://voice-ai-agent-patient-registration.vercel.app/vapi/llm`.
-4. Set the model ID to `@cf/zai-org/glm-4.7-flash`, then publish the draft and
-   test it with Talk.
+4. Set the model ID to `@cf/zai-org/glm-4.7-flash`.
+5. In Advanced -> Start Speaking Plan, choose LiveKit under Smart Endpointing
+   and set the careful wait function to
+   `700 + 4000 * max(0, x - 0.5)`. The template also sets `waitSeconds` to 0.4.
+6. Publish the draft and test it with Talk.
 
 The proxy forces `stream: true` and passes Cloudflare's SSE response to Vapi.
 The Cloudflare token stays in Vapi; only the account ID is configured in

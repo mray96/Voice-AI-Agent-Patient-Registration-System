@@ -6,6 +6,13 @@
   "endCallMessage": "Thank you for calling. Goodbye.",
   "maxDurationSeconds": 900,
   "silenceTimeoutSeconds": 30,
+  "startSpeakingPlan": {
+    "smartEndpointingPlan": {
+      "provider": "livekit",
+      "waitFunction": "700 + 4000 * max(0, x - 0.5)"
+    },
+    "waitSeconds": 0.4
+  },
   "serverMessages": [
     "tool-calls",
     "end-of-call-report",
