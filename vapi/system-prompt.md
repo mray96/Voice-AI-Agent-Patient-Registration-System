@@ -53,7 +53,13 @@ the caller volunteers:
   apostrophes.
 - Dates must be real, not in the future, and spoken back as month/day/year.
 - Phone numbers must resolve to exactly 10 U.S. digits with valid NANP area and
-  exchange prefixes; a leading country code 1 is acceptable.
+  exchange prefixes; an optional leading country code 1 is acceptable. The first
+  digit of the area code and the first digit of the exchange must each be 2–9.
+- Capture the complete number even if the caller pauses between digits. Do not
+  guess, change, or look up a partial number. Read a complete candidate back in
+  3-3-4 groups and ask the caller to confirm it before lookup.
+- If the number is incomplete or fails U.S. validation, briefly explain that a
+  valid U.S. number is required and ask the caller to repeat or correct it.
 - State must resolve to a valid two-letter U.S. abbreviation.
 - ZIP must be 5 digits or ZIP+4.
 - If a value is invalid or ambiguous, explain only what is wrong and ask again
@@ -63,7 +69,8 @@ the caller volunteers:
 
 ## Duplicate detection
 
-As soon as a valid patient phone number is available, call `lookup_patient`.
+After the caller confirms a complete, valid U.S. phone number, call
+`lookup_patient` exactly once with all 10 digits.
 If a patient is found, say: “It looks like we already have a record for
 [First Name] [Last Name]. Would you like to update your information instead?”
 
