@@ -62,8 +62,8 @@ types/check constraints.
 
 - **Vapi** provides the browser voice interface and manages the speech
   pipeline. A PSTN number can be added when phone provisioning is available.
-- **Groq + Llama 3.3 70B** provides OpenAI-compatible tool calling with a
-  generous free development rate limit.
+- **Groq + GPT-OSS 20B** provides OpenAI-compatible streaming and tool calling.
+  Usage is billed at Groq's current model rates.
 - **Fastify + TypeScript** gives a small, typed backend with structured logging.
 - **Supabase PostgreSQL** provides persistent relational storage on its free
   assessment tier.
@@ -204,9 +204,10 @@ HTTPS tunnel. Deploy to Vercel first for the simplest setup.
 1. Push the repository to GitHub, GitLab, or Bitbucket.
 2. Import it into a free personal Vercel project.
 3. Add `DATABASE_URL`, `VAPI_WEBHOOK_SECRET`, `VAPI_PUBLIC_KEY`, and
-   `VAPI_ASSISTANT_ID` in project environment settings. The Vapi public key is
-   safe to expose in the browser; never expose a Vapi private key, Groq key, or
-   database credentials.
+   `VAPI_ASSISTANT_ID` in project environment settings. Add
+   `CLOUDFLARE_ACCOUNT_ID` too when using the Cloudflare model below. The Vapi
+   public key is safe to expose in the browser; never expose a Vapi private key,
+   Groq or Cloudflare token, or database credentials.
 4. Deploy. Vercel detects `src/server.ts` as the Fastify entry point; it
    exposes a serverless handler while `src/app.ts` remains the local process
    entry point.
@@ -220,7 +221,9 @@ nearby Supabase region to reduce tool latency.
 1. Create a Groq API key at [console.groq.com](https://console.groq.com).
 2. Configure the assistant's Custom LLM model with the deployed proxy URL
    `https://YOUR-PROJECT.vercel.app/vapi/llm` and model
-   `llama-3.3-70b-versatile`. Add the Groq key as the Custom LLM credential.
+   `openai/gpt-oss-20b`. Add a Groq key that can access this model as the Custom
+   LLM credential. See [Groq's supported models](https://console.groq.com/docs/models)
+   for current model IDs and access requirements.
    The proxy forwards OpenAI-compatible streaming requests to Groq.
 3. Create a long random value for `VAPI_WEBHOOK_SECRET`.
 4. In Vapi, create a custom server credential that sends:
@@ -237,8 +240,27 @@ nearby Supabase region to reduce tool latency.
    registration flow. A PSTN number can be attached separately if your Vapi
    organization has phone provisioning enabled.
 
-The assistant currently uses Groq's OpenAI-compatible `llama-3.3-70b-versatile`
-model through the deployed `/vapi/llm` proxy.
+The assistant template uses Groq's OpenAI-compatible `openai/gpt-oss-20b` model
+through the deployed `/vapi/llm` proxy. The live Vapi assistant must use the same
+model ID and a Groq credential with access to it.
+
+### Use Cloudflare Workers AI
+
+The same proxy can stream Cloudflare Workers AI Chat Completions to Vapi:
+
+1. Add your Cloudflare account ID as `CLOUDFLARE_ACCOUNT_ID` in Vercel, then
+   deploy the updated project.
+2. In Vapi Integrations, add a Custom LLM API key credential containing your
+   Cloudflare Workers AI API token. The proxy forwards this bearer token to
+   Cloudflare; do not put the token in the Vercel environment.
+3. In the assistant's Model Settings, choose Custom LLM and set the URL to
+   `https://YOUR-PROJECT.vercel.app/vapi/llm`.
+4. Set the model ID to `@cf/zai-org/glm-4.7-flash`. Keep
+   `metadataSendMode` off, then publish the draft and test it with Talk.
+
+The proxy forces `stream: true` because Vapi expects an SSE response. The
+Cloudflare token stays in Vapi's credential; only the account ID is configured
+in Vercel.
 
 ### Vapi API import
 

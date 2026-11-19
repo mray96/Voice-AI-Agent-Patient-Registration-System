@@ -22,6 +22,7 @@ import { DrizzlePatientRepository } from "./repositories/drizzle-patient-reposit
 export interface BuildAppOptions {
   repository: PatientRepository;
   vapiWebhookSecret: string;
+  cloudflareAccountId?: string;
   vapiPublicKey?: string;
   vapiAssistantId?: string;
   logger?: Exclude<FastifyServerOptions["logger"], undefined>;
@@ -83,7 +84,7 @@ export async function buildApp(
 
   await registerPatientRoutes(app, service);
   await registerVapiRoutes(app, service, options.vapiWebhookSecret);
-  await registerLlmRoutes(app);
+  await registerLlmRoutes(app, options.cloudflareAccountId);
   await registerDemoRoutes(app, {
     ...(options.vapiPublicKey === undefined
       ? {}
@@ -200,6 +201,9 @@ async function getVercelApp(): Promise<FastifyInstance> {
         repository,
         vapiWebhookSecret: config.VAPI_WEBHOOK_SECRET,
         vapiAssistantId: config.VAPI_ASSISTANT_ID,
+        ...(config.CLOUDFLARE_ACCOUNT_ID === undefined
+          ? {}
+          : { cloudflareAccountId: config.CLOUDFLARE_ACCOUNT_ID }),
         ...(config.VAPI_PUBLIC_KEY === undefined
           ? {}
           : { vapiPublicKey: config.VAPI_PUBLIC_KEY }),

@@ -24,7 +24,7 @@
   "model": {
     "provider": "custom-llm",
     "url": "https://voice-ai-agent-patient-registration.vercel.app/vapi/llm/chat/completions",
-    "model": "llama-3.3-70b-versatile",
+    "model": "openai/gpt-oss-20b",
     "metadataSendMode": "off",
     "maxTokens": 500,
     "messages": [

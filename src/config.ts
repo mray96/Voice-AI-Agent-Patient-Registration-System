@@ -5,6 +5,7 @@ const configSchema = z.object({
   VAPI_WEBHOOK_SECRET: z.string().min(16),
   VAPI_PUBLIC_KEY: z.string().min(1).optional(),
   VAPI_ASSISTANT_ID: z.string().min(1).default("6d1dd7d7-6b4e-4314-94eb-e1099762dd2d"),
+  CLOUDFLARE_ACCOUNT_ID: z.string().min(1).optional(),
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default("0.0.0.0"),
 });
