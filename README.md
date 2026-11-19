@@ -51,7 +51,7 @@ The API base URL is `https://voice-ai-agent-patient-registration.vercel.app`.
 Phone caller or browser tester
     |
     v
-Vapi (PSTN/browser voice + Deepgram STT + Vapi voice + Groq Llama)
+Vapi (PSTN/browser voice + Deepgram STT + Vapi voice + Cloudflare GLM-4.7-Flash)
     |
     | authenticated tool calls
     v
@@ -69,8 +69,8 @@ types/check constraints.
 
 - **Vapi** provides the free inbound U.S. number, optional browser interface,
   and managed speech pipeline.
-- **Groq + Llama 3.3 70B** provides OpenAI-compatible tool calling with a
-  generous free development rate limit.
+- **Cloudflare Workers AI + GLM-4.7-Flash** provides streamed responses through
+  the OpenAI-compatible proxy. Groq remains an alternative provider.
 - **Fastify + TypeScript** gives a small, typed backend with structured logging.
 - **Supabase PostgreSQL** provides persistent relational storage on its free
   assessment tier.
@@ -227,7 +227,7 @@ HTTPS tunnel. Deploy to Vercel first for the simplest setup.
 Keep the Vercel function in `iad1` (configured in `vercel.json`) and choose a
 nearby Supabase region to reduce tool latency.
 
-## Configure Groq and Vapi
+## Configure Groq as an alternative
 
 1. Create a Groq API key at [console.groq.com](https://console.groq.com).
 2. Configure the assistant's Custom LLM model with the deployed proxy URL
@@ -249,8 +249,9 @@ nearby Supabase region to reduce tool latency.
    number **+1 (651) 386-9251**, then place a real inbound test call. Use `/demo`
    as the secondary browser test path.
 
-The assistant currently uses Groq's OpenAI-compatible `llama-3.3-70b-versatile`
-model through the deployed `/vapi/llm` proxy.
+The assistant template defaults to Cloudflare Workers AI's
+`@cf/zai-org/glm-4.7-flash` model through the `/vapi/llm` proxy. The Groq
+instructions above describe an optional alternative.
 
 ### Use Cloudflare Workers AI
 

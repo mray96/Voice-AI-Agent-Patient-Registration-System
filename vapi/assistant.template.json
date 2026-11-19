@@ -23,9 +23,8 @@
   },
   "model": {
     "provider": "custom-llm",
-    "url": "https://voice-ai-agent-patient-registration.vercel.app/vapi/llm/chat/completions",
-    "model": "openai/gpt-oss-20b",
-    "metadataSendMode": "off",
+    "url": "https://voice-ai-agent-patient-registration.vercel.app/vapi/llm",
+    "model": "@cf/zai-org/glm-4.7-flash",
     "maxTokens": 500,
     "messages": [
       {
