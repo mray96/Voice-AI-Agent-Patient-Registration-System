@@ -76,14 +76,18 @@ async function proxyCompletion(
     delete payload.top_p;
     delete payload.top_k;
 
-    // Groq defaults parallel_tool_calls to true, but GPT-OSS models do not
-    // support parallel tool calls. Disable it for these models explicitly.
-    if (
-      GROQ_MODELS_WITHOUT_PARALLEL_TOOL_CALLS.has(requestedModel) &&
-      Array.isArray(payload.tools) &&
-      payload.tools.length > 0
-    ) {
-      payload.parallel_tool_calls = false;
+    if (GROQ_MODELS_WITHOUT_PARALLEL_TOOL_CALLS.has(requestedModel)) {
+      // Vapi consumes the final assistant content, not Groq's separate
+      // GPT-OSS reasoning field. Ask Groq to return only the final answer.
+      // GPT-OSS does not support reasoning_format, so omit it if supplied.
+      payload.include_reasoning = false;
+      delete payload.reasoning_format;
+
+      // Groq defaults parallel_tool_calls to true, but GPT-OSS models do not
+      // support parallel tool calls. Disable it when Vapi provides tools.
+      if (Array.isArray(payload.tools) && payload.tools.length > 0) {
+        payload.parallel_tool_calls = false;
+      }
     }
   }
 
